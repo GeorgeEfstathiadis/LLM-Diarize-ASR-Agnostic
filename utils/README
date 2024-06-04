@@ -1,0 +1,6 @@
+# Util functions for this paper
+
+This directory contains the helper functions used in the paper. The functions are organized in the following files:
+
+* `data.py`: functions to load and preprocess the data.
+* `metrics.py`: functions to compute the metrics used in the paper (SA-WER and cpWER).

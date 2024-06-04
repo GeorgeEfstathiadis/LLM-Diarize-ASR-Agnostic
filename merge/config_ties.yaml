@@ -1,0 +1,16 @@
+models:
+  - model: path/to/aws_model
+    parameters:
+      weight: 0.34
+      density: 0.8
+  - model: path/to/azure_model
+    parameters:
+      weight: 0.33
+      density: 0.8
+  - model: path/to/whisperx_model
+    parameters:
+      weight: 0.33
+      density: 0.8
+base_model: path/to/Mistral-7B-Instruct-v0.2
+merge_method: ties
+dtype: bfloat16

@@ -1,0 +1,3 @@
+# Speaker Diarization Utils
+
+This directory contains a set of helper functions for speaker diarization. Specificaly we use the TPST function to transfer the speaker labels from one transcription to another. These functions were introduced in the following paper at https://arxiv.org/pdf/2401.03506 and the code is available at https://github.com/google/speaker-id/tree/master/DiarizationLM
