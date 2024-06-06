@@ -1,6 +1,6 @@
 # LLM-Diarize-ASR-Agnostic
 
-Repository for code used in "LLM-based speaker diarization correction: an ASR-agnostic approach" manuscript.
+Repository for code used in "LLM-based speaker diarization correction: A generalizable approach" manuscript.
 
 ## 1. Transcribe audio files
 
