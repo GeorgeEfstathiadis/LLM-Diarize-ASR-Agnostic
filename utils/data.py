@@ -1,5 +1,6 @@
 import re
 import json
+import tgt
 
 def true_labels(f):
     """Extract speaker labels and spoken words from Fisher transcript file."""
@@ -33,6 +34,64 @@ def true_labels(f):
             ref_words += words_list
             ref_times += [(start_time, end_time)] * len(words_list)
     ref_labels = ['1' if x == 'A' else '2' for x in ref_labels]
+    return ref_labels, ref_words, ref_times
+
+def true_labels_primock57(directory, f):
+    """Extract speaker labels and spoken words from PriMock57 dataset."""
+    patient_grid = tgt.io.read_textgrid(f'{directory}/{f}_patient.TextGrid')
+    doctor_grid = tgt.io.read_textgrid(f'{directory}/{f}_doctor.TextGrid')
+
+    # for each speaker extract xmin, xmax, text
+    speaker_labels = []
+    speaker_intervals = []
+    speaker_texts = []
+
+    for i in range(len(patient_grid.tiers[0].intervals)):
+        speaker_labels.append('patient')
+        speaker_intervals.append((patient_grid.tiers[0].intervals[i].start_time, patient_grid.tiers[0].intervals[i].end_time))
+        speaker_texts.append(patient_grid.tiers[0].intervals[i].text)
+
+    for i in range(len(doctor_grid.tiers[0].intervals)):
+        speaker_labels.append('doctor')
+        speaker_intervals.append((doctor_grid.tiers[0].intervals[i].start_time, doctor_grid.tiers[0].intervals[i].end_time))
+        speaker_texts.append(doctor_grid.tiers[0].intervals[i].text)
+
+    # sort lists by speaker_intervals
+    ordering = sorted(range(len(speaker_intervals)), key=lambda k: speaker_intervals[k])
+    speaker_labels = [speaker_labels[i] for i in ordering]
+    speaker_intervals = [speaker_intervals[i] for i in ordering]
+    speaker_texts = [speaker_texts[i] for i in ordering]
+
+    # do some preprocessing on the text
+    # replace ... with space
+    speaker_texts = [re.sub(r'\.\.\.', ' ', x) for x in speaker_texts]
+    # remove stuff inside <>
+    speaker_texts = [re.sub(r'<.*?>', '', x) for x in speaker_texts]
+    # remove punctuation except for '
+    speaker_texts = [re.sub(r'[^\w\s\']', '', x) for x in speaker_texts]
+    # lowercase and remove leading/trailing whitespace
+    speaker_texts = [x.lower().strip() for x in speaker_texts]
+    # there are some empty strings, remove them, and corresponding speaker_labels and speaker_intervals
+    empty_indices = [i for i, x in enumerate(speaker_texts) if x == '']
+    speaker_labels = [x for i, x in enumerate(speaker_labels) if i not in empty_indices]
+    speaker_intervals = [x for i, x in enumerate(speaker_intervals) if i not in empty_indices]
+    speaker_texts = [x for i, x in enumerate(speaker_texts) if i not in empty_indices]
+    assert len(speaker_labels) == len(speaker_intervals) == len(speaker_texts)
+
+    speaker_labels = ['1' if x == 'doctor' else '2' for x in speaker_labels]
+
+    # split the text into words and thus also produce the word-level speaker labels
+    ref_labels = []
+    ref_times = []
+    ref_words = []
+
+    for i in range(len(speaker_texts)):
+        words = speaker_texts[i].split()
+        for j in range(len(words)):
+            ref_labels.append(speaker_labels[i])
+            ref_times.append(speaker_intervals[i])
+            ref_words.append(words[j])
+
     return ref_labels, ref_words, ref_times
 
 def aws_labels(f, start_time, end_time):
